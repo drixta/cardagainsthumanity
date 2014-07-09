@@ -1,0 +1,9 @@
+{
+  "name": "card-against-humanity",
+  "description": "Multiplayer card against humanity",
+  "version": "0.0.1",
+  "dependencies": {
+    "express": "^4.5.1",
+    "socket.io": "^1.0.6"
+  }
+}
