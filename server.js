@@ -28,9 +28,10 @@ io.on('connection', function(socket){
   socket.on('join room', function (roomNumber) {
     if (roomNumber.hasOwnProperty('roomNumber')){
       socket.join(roomNumber);
-      rooms[roomNumber][usernames][username] = socket.username;
+      rooms[roomNumber][usernames][socket.username] = socket.username;
       ++rooms[roomNumber].numUsers;
       roomOccupied = roomNumber;
+      console.log(socket.username + ' joined Room:' + roomNumber);
     }
     else {
       socket.join(roomNumber);
@@ -38,8 +39,9 @@ io.on('connection', function(socket){
         usernames: {},
         numUsers: 1
       };
-      rooms[roomNumber].usernames[username] = socket.username;
-      roomOccupied = roomNumber;      
+      rooms[roomNumber].usernames[socket.username] = socket.username;
+      roomOccupied = roomNumber;
+      console.log(socket.username + ' created room:' + roomNumber);     
     }
     io.in(roomNumber).emit('join room', {
         username: socket.username,
@@ -49,23 +51,26 @@ io.on('connection', function(socket){
 
   socket.on('disconnect', function(){
     var room;
-    room = rooms[roomOccupied]
-    if (addedUser){
-      delete room.usernames[socket.username];
-      --room.numUsers;
-      socket.leave(roomOccupied);
+    if (roomOccupied) {
+      room = rooms[roomOccupied];
+      if (addedUser){
+        delete room.usernames[socket.username];
+        --room.numUsers;
+        socket.leave(roomOccupied);
+      }
+      io.in(roomOccupied).emit('user left',{
+        username: socket.username,
+        numUsers: room.numUsers
+      })
+      room.numUsers === 0 && (delete room);
+      console.log(socket.username + ' left room: ' + roomOccupied);
     }
-    io.in(roomOccupied).emit('user left',{
-      username: socket.username,
-      numUsers: numUsers
-    })
-    numUsers === 0 && (delete rooms[roomOccupied]);
   });
 
   socket.on('create user', function (username) {
     socket.username = username;
     addedUser = true;
-    console.log('created User');
+    console.log(socket.username + ' is created');
   });
 });
 app.use('/api', router);
