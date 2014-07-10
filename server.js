@@ -2,10 +2,11 @@ var express = require('express');
 var app = express();
 var fs = require('fs');
 var router = express.Router();
-var http = require('http').Server(app);
-var io = require('socket.io')(http);
+var http = require('http').createServer(app);
+var io = require('socket.io').listen(http);
 
 app.use(express.static(__dirname + '/public'));
+app.use('/bower_components', express.static(__dirname + '/bower_components'));
 
 var allCard= JSON.parse(fs.readFileSync('cards.json','utf8'));
 
@@ -19,10 +20,11 @@ router.route('/cards')
     res.json(allCard);
   });
 var rooms = {};
+
 io.on('connection', function(socket){
   var addedUser = false,
       roomOccupied;
-
+  console.log('Socket is created');
   socket.on('join room', function (roomNumber) {
     if (roomNumber.hasOwnProperty('roomNumber')){
       socket.join(roomNumber);
@@ -51,6 +53,7 @@ io.on('connection', function(socket){
     if (addedUser){
       delete room.usernames[socket.username];
       --room.numUsers;
+      socket.leave(roomOccupied);
     }
     io.in(roomOccupied).emit('user left',{
       username: socket.username,
@@ -62,10 +65,11 @@ io.on('connection', function(socket){
   socket.on('create user', function (username) {
     socket.username = username;
     addedUser = true;
+    console.log('created User');
   });
 });
 app.use('/api', router);
 
-app.listen(process.env.PORT || 3000, function(){  //CONFIG.port
-	console.log("Server running on port " + 3000);
+http.listen(process.env.PORT || 3000, function(){  //CONFIG.port
+  console.log("Server running on port " + 3000);
 });

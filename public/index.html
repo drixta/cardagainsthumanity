@@ -1,18 +1,19 @@
 <!DOCTYPE html>
-<html>
-<head ng-app="cahApp">
+<html ng-app="cahApp">
+<head>
 	<title>CAH</title>
 	<link rel="stylesheet" type="text/css" href="../bower_components/normalize-css/normalize.css">
-	<link rel="stylesheet" type="text/css" href="main.min.css">
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
-<body ng-controller="mainController">
-
-	<div id="main">
+<body ng-controller="MainController">
+	<div id="name-input">
+		Enter Your Name
+		<input id="usernameInput" type="text">
 	</div>
-
-	<script src="../bower_components/angular/angular.min.js"></script>
-	<script src="../bower_components/jquery/jquery.min.js"></script>
-	<script src="client.js"></script>
+	<script type="text/javascript" src="/bower_components/jquery/dist/jquery.min.js"></script>
+	<script type="text/javascript" src="/bower_components/angular/angular.min.js"></script>
+	<script src="/socket.io/socket.io.js"></script>
+	<script type="text/javascript" src="client.js"></script>
 </body>
 </html>
