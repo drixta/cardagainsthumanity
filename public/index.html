@@ -7,14 +7,12 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" type="text/css" href="stylesheet/main.min.css">
 </head>
-<body ng-controller="MainController">
-	<div id="name">
-		Enter Your Name
-		<input id="username-input" type="text">
-	</div>
-	<div id="room">
-		Join or Create a Room
-		<input id="room-input" type="text">
+<body ng-controller="MainController as main">
+	<div id="content">
+			<div ng-show="main.isTemplate('username')"><div ng-include="'../_partial/_username.html'"></div></div>
+			<div ng-show="main.isTemplate('room')"><div ng-include="'../_partial/_room-select.html'"></div></div>
+			<div ng-show="main.isTemplate('game')"><div ng-include="'../_partial/_game.html'"></div></div>
+		</div>
 	</div>
 	<script type="text/javascript" src="/bower_components/jquery/dist/jquery.min.js"></script>
 	<script type="text/javascript" src="/bower_components/angular/angular.min.js"></script>

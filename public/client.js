@@ -1,40 +1,43 @@
 (function(){
 	var socket = io(),
-		$username = $('#username-input'),
-		$room = $('#room-input'),
 		room,
 		username;
 	var app = angular.module('cahApp', []);
 
-	app.controller('MainController', function($scope) {
-		$scope.message = 'Hi';
-	});
-
-	$username.keyup(function() {
-		if (event.keyCode===13){
-			addUser();
-		}		
-	});
-	$room.keyup(function() {
-		if (event.keyCode===13){
-			joinRoom();
-		}		
-	});
-	function addUser(){
-		console.log('adduser');
-		username = $username.val().trim();
-		if (username){
-			$('#name').fadeOut();
-			$('#room').show();
-			socket.emit('create user', username)
+	app.controller('MainController', function() {
+		this.template = 'username';
+		this.username = '';
+		this.room = '';
+		this.getTemplate = function(e){
+			if (e.keyCode === 13) {
+				switch (this.template){
+					case 'username':
+						this.addUser();
+						this.template = 'room';
+						break;
+					case 'room':
+						this.joinRoom();
+						this.template = 'game';
+						break;
+				}
+			}
+		};
+		this.isTemplate = function(template){
+			return this.template === template;
+		};
+		this.addUser = function(){
+			var $username = $('#name-input');
+			username = $username.val().trim();
+			if (username){
+				socket.emit('create user', username)
+			}
 		}
-	}
-	function joinRoom(){
-		console.log('Join Roomed');
-		room = $room.val().trim();
-		if (room){
-			$('#room').fadeOut();
-			socket.emit('join room', room);
+		this.joinRoom = function(){
+			var $room = $('#room-input');
+			room = $room.val().trim();
+			if (room){
+				socket.emit('join room', room);
+			}
 		}
-	}
+	});
 })();
