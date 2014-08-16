@@ -1,5 +1,6 @@
 var gulp = require('gulp'),
 less = require('gulp-less'),
+util = require('gulp-util'),
 watch = require('gulp-watch'),
 concat = require('gulp-concat'),
 livereload = require('gulp-livereload'),
@@ -15,41 +16,31 @@ exec1 = require('child_process').exec;
 
 
 gulp.task('less', function(){
-	return gulp.src('public/stylesheet/main.less')
+	return gulp.src('src/less/main.less')
 		.pipe(less())
 		.pipe(gulp.dest('public/stylesheet'))
+		.pipe(minifyCSS())
 		.pipe(rename({suffix: '.min'}))
 		.pipe(gulp.dest('public/stylesheet'));
 });
 
 gulp.task('jsx', function(){
-	gulp.src('public/script/*.jsx')
+	return gulp.src('src/js/*.jsx')
 		.pipe(react())
-		.pipe(gulp.dest('public/script/js'));
-});
-
-gulp.task('watch-less', function(){
-	gulp.src('public/stylesheet/*.less')
-		.pipe(watch(function(files){
-			return files
-				.pipe(less())
-				.pipe(gulp.dest('public/stylesheet'))
-				.pipe(rename({suffix: '.min'}))
-				.pipe(gulp.dest('public/stylesheet'));
-		}));
-})
-
-gulp.task('watch-jsx', function(){
-	gulp.src('public/script/*.jsx')
-	.pipe(watch(function(files){
-		return files
-			.pipe(react())
-			.pipe(gulp.dest('public/script/js'));
-	}));
+		.on('error', util.log)
+		.on('error', util.beep)
+		.pipe(gulp.dest('src/js'))
+		.pipe(gulp.dest('public/script'));
 });
 
 gulp.task('watch', function(){
-	return gulp.start('watch-less'), gulp.start('watch-jsx');
+	var lr = require('gulp-livereload')(),
+		stream;
+	gulp.watch('./src/less/*.less', ['less']);
+	gulp.watch('./src/js/*.jsx', ['jsx']);
+	gulp.watch('./public/**', function(file){
+		lr.changed(file.path);
+	});
 });
 
 gulp.task('server', function(){
