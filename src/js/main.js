@@ -1,27 +1,35 @@
 /** @jsx React.DOM */
 (function(){
-	var PageState = React.createClass({displayName: 'PageState',
+	var socket = io();
+	PageState = React.createClass({displayName: 'PageState',
 		getInitialState: function(){
 			return {
-				currentPage : 'username'
+				currentPage : 'username',
+				username: '',
+				room: ''
 			};
 		},
-		render: function(){
-			var self = this,
-				partial;
-			
-			var handleSubmit = function(state){
-				self.setState({currentPage: state})
-			};
-
-			if (this.state.currentPage === 'username') {
-				partial = UsernameSetUp({handleSubmit: handleSubmit});
+		handleSubmit: function(state, input){
+			if (this.state.currentPage === 'username'){
+				this.setState({username:input});
 			}
 			else if (this.state.currentPage === 'roomSelect') {
-				partial = RoomSelect({handleSubmit: handleSubmit});
+				this.setState({room:input});
+			}
+			this.setState({currentPage: state});
+		},
+		render: function(){
+			var	partial;
+
+			if (this.state.currentPage === 'username') {
+				partial = UsernameSetUp({handleSubmit: this.handleSubmit});
+			}
+			else if (this.state.currentPage === 'roomSelect') {
+				partial = RoomSelect({handleSubmit: this.handleSubmit});
 			}
 			else if (this.state.currentPage === 'gameBoard') {
-				partial = GameBoard(null);
+				console.log(this.state.username);
+				partial = GameBoard({username: this.state.username, room: this.state.room});
 			}
 			return partial;
 		}
@@ -33,11 +41,17 @@
 				name : ''
 			}
 		},
+		componentDidMount: function(){
+			document.getElementsByTagName('input')[0].focus();
+		},
 		handleChange: function(event){			
 			this.setState({name: event.target.value.trim()})
 		},
 		handleSubmit : function(){
-			this.props.handleSubmit('roomSelect');
+			if (this.state.name.length) {
+				socket.emit('create user',this.state.name);
+			}
+			this.props.handleSubmit('roomSelect',this.state.name);
 		},
 		checkEnter: function(event){
 			if (event.keyCode === 13){
@@ -47,10 +61,9 @@
 		render: function(){
 			var name = this.state.name;
 			return (
-				React.DOM.div(null, 
+				React.DOM.div({className: "cah-hero-input"}, 
 					React.DOM.h1(null, "Your name?"), 
-					React.DOM.input({id: "name-input", value: name, type: "text", onKeyDown: this.checkEnter, onChange: this.handleChange}), 
-					React.DOM.h1(null, name)
+					React.DOM.input({id: "name-input", value: name, type: "text", onKeyDown: this.checkEnter, onChange: this.handleChange})
 				)
 			);
 		}
@@ -62,11 +75,61 @@
 				room : ''
 			}
 		},
+		handleChange: function(event){			
+			this.setState({room: event.target.value.trim()})
+		},
+		componentDidMount: function(){
+			document.getElementsByTagName('input')[0].focus();
+		},
 		handleSubmit : function(){
-			this.props.handleSubmit('gameBoard');
+			if (this.state.room.length) {
+				socket.emit('join room',this.state.room);
+			}
+			this.props.handleSubmit('gameBoard', this.state.room);
+		},
+		checkEnter: function(event){
+			if (event.keyCode === 13){
+				this.handleSubmit();
+			}
 		},
 		render: function(){
-			return React.DOM.h1(null, "Choose your Room");			
+			var room = this.state.room;
+			return (React.DOM.div({className: "cah-hero-input"}, 
+						React.DOM.h1(null, "Enter room name"), 
+						React.DOM.input({id: "room-input", value: room, type: "text", onKeyDown: this.checkEnter, onChange: this.handleChange})
+					)
+			);
+		}
+	});
+
+	var GameBoard = React.createClass({displayName: 'GameBoard',
+		render: function(){
+			return (React.DOM.div(null, 
+						React.DOM.h1(null, "This is room ", this.props.room), 
+						React.DOM.h2(null, "Welcome ", this.props.username), 
+						WhiteCard({text: "A cooler full of organs"})
+					)
+			);
+		}
+	});
+
+	var WhiteCard = React.createClass({displayName: 'WhiteCard',
+		render: function(){
+			return (React.DOM.div({className: "card white-card"}, 
+						React.DOM.p(null, this.props.text), 
+						CardFooter(null)
+					)
+			);
+		}
+	});
+
+	var CardFooter = React.createClass({displayName: 'CardFooter',
+		render: function(){
+			return (React.DOM.div({className: "card-footer"}, 
+						React.DOM.div({className: "card-logo"}), 
+						React.DOM.span(null, "Cards Against Humanity")
+					)
+			);
 		}
 	});
 	React.renderComponent(

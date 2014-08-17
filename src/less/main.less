@@ -1,0 +1,72 @@
+@import "variables.less";
+
+html, body { 
+	height: 100%;
+}
+html {
+	background-color: #fafafa;
+}
+
+body {
+	padding:0;
+	margin:0;
+}
+#everything {
+	height: 100%;
+}
+.cah-hero-input {
+	text-align: center;
+}
+.white-card {
+	width: 170px;
+	height: 250px;
+	border-radius: 15px;
+	font-weight: bold;
+	font-size: 1.4em;
+	padding: 20px;
+	margin: 10px;
+	box-shadow: 1px 0px 5px 0px rgba(0, 0, 0, 0.5);
+	background-color: white;
+}
+.card {
+	position: relative;
+	.card-logo {
+		display: inline-block;
+		padding: 4px;
+		width: @logo-size;
+		height: @logo-size;
+		background: black;
+		transform: rotate(-17deg);
+		&:after {
+			content: " ";
+			position: absolute;
+			padding: 4px;
+			width: @logo-size;
+			height: @logo-size;
+			background: white;
+			border: 1px solid black;
+			margin: -1px 4px;
+			transform: rotate(34deg);
+		}
+		&:before {
+			content: " ";
+			position: absolute;
+			padding: 4px;
+			width: @logo-size;
+			height: @logo-size;
+			background: white;
+			border: 1px solid black;
+			margin: -4px 0px;
+			transform: rotate(17deg);
+		}
+	}
+	.card-footer {
+		bottom: 20px;
+		position: absolute;
+		span {
+			display: inline-block;
+			font-size: 6px;
+			margin-left: 15px;
+		}
+	}
+}

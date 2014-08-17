@@ -61,7 +61,7 @@ io.on('connection', function(socket){
       io.in(roomOccupied).emit('user left',{
         username: socket.username,
         numUsers: room.numUsers
-      })
+      });
       room.numUsers === 0 && (delete room);
       console.log(socket.username + ' left room: ' + roomOccupied);
     }
