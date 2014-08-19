@@ -5,19 +5,59 @@ var router = express.Router();
 var http = require('http').createServer(app);
 var io = require('socket.io').listen(http);
 
+
 app.use(express.static(__dirname + '/public'));
 app.use('/bower_components', express.static(__dirname + '/bower_components'));
 
 var allCard= JSON.parse(fs.readFileSync('cards.json','utf8'));
+var ACard = allCard.filter(function(elem){
+  return elem.cardType === 'A';
+});
+var QCard = allCard.filter(function(elem){
+  return elem.cardType === 'Q';
+});
+var shuffle = function(deck){
+  var m = deck.length,
+      temp,
+      i;
+  while(m) {
+    i = Math.floor(Math.random() * m--);
+    t = deck[m];
+    deck[m] = deck[i];
+    deck[i] = t;
+  }
+  return deck;
+};
 
-router.use(function(){
-  console.log('Calling an api');
+var getNAmountOfCards = function(n, type, nextSet){
+  var i,
+      deck = [];
+  if (typeof nextSet === 'undefined') {
+    nextSet = 0;
+  }
+  switch (type) {
+    case 'A':
+      return shuffle(ACard.slice(nextSet * n, n));
+    case 'Q':
+      return shuffle(QCard.slice(nextSet * n, n));
+    default:
+      throw new Error('There are no such ' + type + ' of cards');
+  }
+};
+
+router.use(function(req,res,next){
+  console.log(req.url);
   next();
 });
 
 router.route('/cards')
   .get(function(req, res){
     res.json(allCard);
+  });
+
+router.route('/getwhitecards/:set')
+  .get(function(req,res){
+    res.json(getNAmountOfCards(300, 'A', req.params.set));
   });
 var rooms = {};
 
@@ -26,9 +66,9 @@ io.on('connection', function(socket){
       roomOccupied;
   console.log('Socket is created');
   socket.on('join room', function (roomNumber) {
-    if (roomNumber.hasOwnProperty('roomNumber')){
+    if (rooms.hasOwnProperty(roomNumber)){
       socket.join(roomNumber);
-      rooms[roomNumber][usernames][socket.username] = socket.username;
+      rooms[roomNumber].usernames[socket.username] = socket.username;
       ++rooms[roomNumber].numUsers;
       roomOccupied = roomNumber;
       console.log(socket.username + ' joined Room:' + roomNumber);
@@ -37,7 +77,9 @@ io.on('connection', function(socket){
       socket.join(roomNumber);
       rooms[roomNumber] = {
         usernames: {},
-        numUsers: 1
+        numUsers: 1,
+        ADeck: getNAmountOfCards(500, 'A'),
+        QDeck: getNAmountOfCards(50, 'Q')
       };
       rooms[roomNumber].usernames[socket.username] = socket.username;
       roomOccupied = roomNumber;
@@ -46,6 +88,15 @@ io.on('connection', function(socket){
     io.in(roomNumber).emit('join room', {
         username: socket.username,
         numUsers: rooms[roomNumber].numUsers
+    });
+  });
+
+  socket.on('requestRoomData', function(){
+    socket.emit('responseRoomData', {
+      usernames: rooms[roomOccupied].usernames,
+      numUsers: rooms[roomOccupied].numUsers,
+      ADeck: rooms[roomOccupied].ADeck.splice(0,10),
+      FullADeck: rooms[roomOccupied].ADeck
     });
   });
 
@@ -62,8 +113,11 @@ io.on('connection', function(socket){
         username: socket.username,
         numUsers: room.numUsers
       });
-      room.numUsers === 0 && (delete room);
       console.log(socket.username + ' left room: ' + roomOccupied);
+      if (room.numUsers === 0) {
+        console.log(roomOccupied + ' is empty, removing room');
+        delete room;
+      }
     }
   });
 

@@ -29,15 +29,15 @@
 			var $username = $('#name-input');
 			username = $username.val().trim();
 			if (username){
-				socket.emit('create user', username)
+				socket.emit('create user', username);
 			}
-		}
+		};
 		this.joinRoom = function(){
 			var $room = $('#room-input');
 			room = $room.val().trim();
 			if (room){
 				socket.emit('join room', room);
 			}
-		}
+		};
 	});
 })();

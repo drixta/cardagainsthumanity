@@ -2,6 +2,7 @@
 
 html, body { 
 	height: 100%;
+	overflow: hidden;
 }
 html {
 	background-color: #fafafa;
@@ -17,10 +18,12 @@ body {
 .cah-hero-input {
 	text-align: center;
 }
-.white-card {
+.a-card {
+	left: 40%;
+	display: inline-block;	
 	width: 170px;
 	height: 250px;
-	border-radius: 15px;
+	border-radius: 12px;
 	font-weight: bold;
 	font-size: 1.4em;
 	padding: 20px;
@@ -67,6 +70,26 @@ body {
 			display: inline-block;
 			font-size: 6px;
 			margin-left: 15px;
+		}
+	}
+}
+.player-hand {
+	width: 90%;
+	.card {
+		cursor: pointer;
+		position: absolute;
+		bottom: 0;
+		overflow: hidden;
+		transition: transform 0.5s, bottom 0.5s, left 0.5s;
+		&:hover {
+			z-index: 9999;
+			box-shadow: 1px 0px 25px 0px rgba(0, 150, 214, 0.9);
+			transform: rotate(0deg)!important;
+			bottom: 60px!important;
+			transition: transform 0.5s, bottom 0.5s;
+		}
+		p {
+			cursor: pointer;
 		}
 	}
 }

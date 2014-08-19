@@ -1,5 +1,42 @@
 (function(){
 	var socket = io();
+	var getAngle = function(index){
+		var initialAngle = -35;
+		var delta = index * 7;
+		return initialAngle + delta;
+	};
+	var getLeft = function(index){
+		var initialLeft = 15;
+		return initialLeft + (5*index);
+	};
+	var getHeight = function(index,delta){
+		var initialHeight = delta;
+		var height;
+		height = (Math.abs(Math.abs(initialHeight - (index* (delta/5))) - delta) - (1*index)) - 10;
+		return height;
+	};
+
+	var spreadCard = function(){
+		var hand = document.getElementsByClassName('player-hand')[0];
+		var positions = getPosition();
+		var i;
+		for (i = 0; i < positions.length; i++){
+			hand.children[i].style.cssText = 'transform: rotate(' + positions[i].angle + 'deg);left:' + positions[i].left + '%;bottom:' + positions[i].bottom +'%;';
+		}
+	};
+	var getPosition = function(){
+		var hand = document.getElementsByClassName('player-hand')[0];
+		var cardsPosition = [];
+		var position;
+		for (var i = 0; i < 10; i++){
+			position = {};
+			position.angle = getAngle(i);
+			position.bottom = getHeight(i, 15);
+			position.left = getLeft(i);
+			cardsPosition.push(position);
+		}
+		return cardsPosition;
+	};
 	PageState = React.createClass({
 		getInitialState: function(){
 			return {
@@ -19,7 +56,6 @@
 		},
 		render: function(){
 			var	partial;
-
 			if (this.state.currentPage === 'username') {
 				partial = <UsernameSetUp handleSubmit={this.handleSubmit} />;
 			}
@@ -27,7 +63,6 @@
 				partial = <RoomSelect handleSubmit={this.handleSubmit} />;
 			}
 			else if (this.state.currentPage === 'gameBoard') {
-				console.log(this.state.username);
 				partial = <GameBoard username={this.state.username} room={this.state.room}/>;
 			}
 			return partial;
@@ -104,17 +139,70 @@
 	var GameBoard = React.createClass({
 		render: function(){
 			return (<div>
-						<h1>This is room {this.props.room}</h1>
+						<h1>Room {this.props.room}</h1>
 						<h2>Welcome {this.props.username}</h2>
-						<WhiteCard text='A cooler full of organs'/>
+						<PlayerHand cardsPosition = {getPosition()}/>
 					</div>
 			);
 		}
 	});
 
-	var WhiteCard = React.createClass({
+	var PlayerHand = React.createClass({
+		getInitialState: function(){
+			return {cards: []}
+		},
+		componentDidMount: function(){
+			var self = this;
+			socket.emit('requestRoomData', this.props.room);
+			socket.on('responseRoomData', function(data){
+				if (self.isMounted()){
+					self.setState({
+						cards: data.ADeck
+					})
+				}
+			});
+		},
+		componentDidUpdate: function(){
+			setTimeout(spreadCard,1);
+		},
 		render: function(){
-			return (<div className='card white-card'>
+			var self = this;
+			var cards = this.state.cards.map(function(card, index){
+				return <ACard key={card.id} onClick={self.attachCard} position={self.props.cardsPosition[index]} text={card.text}/>;
+			});
+			return <div className="player-hand">
+					{cards}
+				   </div>
+		}
+
+	});
+
+	var ACard = React.createClass({
+		getInitialState: function(){
+			return {
+				attached: false,
+			}
+		},
+		handleClick: function(evt){
+			var target = evt.currentTarget,
+				self = this;
+
+			if (this.state.attached) {
+
+				target.style.cssText = 'transition: left 0.3s, bottom 0.3s; left:' + this.props.position.left + '%; top: "";bottom:' + this.props.position.bottom +'%; transform: rotate(' + this.props.position.angle + 'deg)';
+				this.setState({attached: false});
+				window.onmousemove = null;
+				return;
+			}
+			target.style.transform = 'rotate(0deg)';
+			target.style.bottom = '';
+			this.setState({attached: true});
+			window.onmousemove = function(evt) {
+				target.style.cssText = 'transition: left 0s, top 0s; left:'+ (evt.clientX - 105) +'px;top:' + (evt.clientY- 145)  + 'px';
+			}
+		},
+		render: function(){
+			return (<div onClick={this.handleClick}className='card a-card'>
 						<p>{this.props.text}</p>
 						<CardFooter/>
 					</div>

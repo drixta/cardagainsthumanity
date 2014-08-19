@@ -4,43 +4,59 @@ util = require('gulp-util'),
 watch = require('gulp-watch'),
 concat = require('gulp-concat'),
 livereload = require('gulp-livereload'),
+browserSync = require('browser-sync'),
+reload = browserSync.reload,
 minifyCSS = require('gulp-minify-css'),
 uglify = require('gulp-uglify'),
 jshint = require('gulp-jshint');
 rename = require('gulp-rename');
 react = require('gulp-react');
+plumber = require('gulp-plumber');
 open = require('gulp-open');
-shell = require('gulp-shell');
 exec0 = require('child_process').exec;
 exec1 = require('child_process').exec;
 
+var onError = function (err){
+	util.beep();
+	console.log(err);
+};
+
+gulp.task('browser-sync', function(){
+	browserSync({
+	});
+});
 
 gulp.task('less', function(){
 	return gulp.src('src/less/main.less')
+		.pipe(plumber({
+			errorHandler: onError
+		}))
 		.pipe(less())
 		.pipe(gulp.dest('public/stylesheet'))
 		.pipe(minifyCSS())
 		.pipe(rename({suffix: '.min'}))
-		.pipe(gulp.dest('public/stylesheet'));
+		.pipe(gulp.dest('public/stylesheet'))
+		.pipe(reload({stream:true}));
 });
 
 gulp.task('jsx', function(){
 	return gulp.src('src/js/*.jsx')
+		.pipe(plumber({
+			errorHandler: onError
+		}))
 		.pipe(react())
 		.on('error', util.log)
 		.on('error', util.beep)
 		.pipe(gulp.dest('src/js'))
-		.pipe(gulp.dest('public/script'));
+		.pipe(gulp.dest('public/script'))
+		.pipe(reload({stream:true}));
 });
 
 gulp.task('watch', function(){
-	var lr = require('gulp-livereload')(),
-		stream;
+	gulp.start('browser-sync');
 	gulp.watch('./src/less/*.less', ['less']);
-	gulp.watch('./src/js/*.jsx', ['jsx']);
-	gulp.watch('./public/**', function(file){
-		lr.changed(file.path);
-	});
+	gulp.watch('./src/js/*.jsx', ['jsx', browserSync.reload]);
+	gulp.watch('./public/**');
 });
 
 gulp.task('server', function(){
