@@ -157,7 +157,6 @@
 	var RoomPopulation = React.createClass({
 		render: function(){
 			return (<div>
-
 					</div>
 					)
 		}

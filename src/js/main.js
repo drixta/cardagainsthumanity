@@ -158,7 +158,6 @@
 	var RoomPopulation = React.createClass({displayName: 'RoomPopulation',
 		render: function(){
 			return (React.DOM.div(null
-
 					)
 					)
 		}
