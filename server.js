@@ -100,6 +100,12 @@ io.on('connection', function(socket){
     });
   });
 
+  socket.on('requestInitialCards', function(){
+    socket.emit('responseInitialCards', {
+      ACards: rooms[roomOccupied].ADeck.splice(0,10)
+    });
+  });
+
   socket.on('disconnect', function(){
     var room;
     if (roomOccupied) {

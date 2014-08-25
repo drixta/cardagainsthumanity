@@ -2,8 +2,8 @@
 (function(){
 	var socket = io();
 	var getAngle = function(index){
-		var initialAngle = -35;
-		var delta = index * 7;
+		var initialAngle = -15;
+		var delta = index * Math.abs(initialAngle / 5);
 		return initialAngle + delta;
 	};
 	var getLeft = function(index){
@@ -32,12 +32,13 @@
 		for (var i = 0; i < 10; i++){
 			position = {};
 			position.angle = getAngle(i);
-			position.bottom = getHeight(i, 15);
+			position.bottom = getHeight(i,10) ;
 			position.left = getLeft(i);
 			cardsPosition.push(position);
 		}
 		return cardsPosition;
 	};
+
 	PageState = React.createClass({displayName: 'PageState',
 		getInitialState: function(){
 			return {
@@ -46,6 +47,12 @@
 				room: ''
 			};
 		},
+
+		/*	CAHInitInfo = {
+			username: "abc",
+			room: "a1b2c3",
+		}
+		*/
 		handleSubmit: function(state, input){
 			if (this.state.currentPage === 'username'){
 				this.setState({username:input});
@@ -148,23 +155,33 @@
 		}
 	});
 
+	var RoomPopulation = React.createClass({displayName: 'RoomPopulation',
+		render: function(){
+			return (React.DOM.div(null
+
+					)
+					)
+		}
+	});
+
 	var PlayerHand = React.createClass({displayName: 'PlayerHand',
 		getInitialState: function(){
 			return {cards: []}
 		},
 		componentDidMount: function(){
 			var self = this;
-			socket.emit('requestRoomData', this.props.room);
-			socket.on('responseRoomData', function(data){
+			socket.emit('requestInitialCards', this.props.room);
+			socket.on('responseInitialCards', function(data){
 				if (self.isMounted()){
+					console.log(data);
 					self.setState({
-						cards: data.ADeck
+						cards: data.ACards
 					})
 				}
 			});
 		},
 		componentDidUpdate: function(){
-			setTimeout(spreadCard,1);
+			setTimeout(spreadCard,2);
 		},
 		render: function(){
 			var self = this;
@@ -189,7 +206,6 @@
 				self = this;
 
 			if (this.state.attached) {
-
 				target.style.cssText = 'transition: left 0.3s, bottom 0.3s; left:' + this.props.position.left + '%; top: "";bottom:' + this.props.position.bottom +'%; transform: rotate(' + this.props.position.angle + 'deg)';
 				this.setState({attached: false});
 				window.onmousemove = null;
